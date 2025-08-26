@@ -54,6 +54,47 @@ def generate_notes():
 
     return notes_resp.message.content
 
+def generate_mcq():
+    MCQ_PROMPT = """
+        You are a helpful AI tutor that creates multiple choice questions from the notes and documents. 
+        Create multiple choice questions with 4 options each, and provide the correct answer with a detailed explanation.
+        Ensure that the questions cover all the main topics and subtopics from the notes.
+        Make the questions clear and concise, and ensure that they test understanding of key concepts and important facts.
+
+        Format the questions in JSON 
+        Here is an example: 
+        {
+            "questions": [
+                {
+                    "question": "What is the capital of France?",
+                    "options": [
+                        "Berlin",
+                        "Madrid",
+                        "Paris",
+                        "Rome"
+                    ],
+                    "answer": "Paris",
+                    "explanation": "Paris is the capital and most populous city of France."
+                },
+                {
+                    "question": "What is the largest planet in our solar system?",
+                    "options": [
+                        "Earth",
+                        "Jupiter",
+                        "Mars",
+                        "Saturn"
+                    ],
+                    "answer": "Jupiter",
+                    "explanation": "Jupiter is the largest planet in our solar system."
+                }
+            ]
+        }
+    """
+    mcq_msg = Message(role="user", content=MCQ_PROMPT)
+    mcq_resp = assistant.chat(messages=[mcq_msg])
+
+    return mcq_resp.message.content
+
 def delete_assistant():
     # this deletes the assistant
     pc.assistant.delete_assistant(
@@ -68,10 +109,22 @@ def test_workflow():
         logger.error("PDF upload failed.")
 
     notes = generate_notes()
+
     if notes:
         logger.info(f"Notes generated successfully: {notes}")
         return notes
     else:
         logger.error("Notes generation failed.")
 
+    mcq = generate_mcq()
+
+    if mcq:
+        logger.info(f"MCQ generated successfully: {mcq}")
+        return mcq
+    else:
+        logger.error("MCQ generation failed.")
+
     return None
+
+if __name__ == "__main__":
+    test_workflow()
