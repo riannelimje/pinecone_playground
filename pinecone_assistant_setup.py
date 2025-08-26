@@ -15,10 +15,10 @@ pc = Pinecone(api_key=PINECONE_API)
 
 def create_pinecone_assistant():
     try: 
-        assistant = pc.assistant.describe_assistant(assistant_name="pdf-assistant")
+        assistant = pc.assistant.describe_assistant(assistant_name="pdf-assistant2")
     except:
         assistant = pc.assistant.create_assistant(
-            assistant_name="pdf-assistant", 
+            assistant_name="pdf-assistant2", 
             instructions="Use British English for spelling and grammar. You are a helpful AI tutor that creates study material from documents. Generate clear, comprehensive and concise summaries and mcq questions with detailed answers.", # Description or directive for the assistant to apply to all responses.
             region="us", # Region to deploy assistant. Options: "us" (default) or "eu".
             timeout=30 # Maximum seconds to wait for assistant status to become "Ready" before timing out.
@@ -28,17 +28,19 @@ def create_pinecone_assistant():
 
 assistant = create_pinecone_assistant()
 
+# TODO: create my own pdf parser kinda thing and embedding??? + accept uploads from the web those kind or tbh i can just upload here
 def upload_pdf():
     # it seems like the quota for upload is 10 
     try:
         response = assistant.upload_file(
-            file_path="/Users/riannelim/Desktop/mcra/week1/M19-2025-MCRA-W01-Attract-Awareness-Student-Deck.pdf",
+            file_path="/Users/riannelim/Downloads/Telegram Desktop/SMU_Gen_AI_Topic_1___part_1_250822_093259.pdf",
             timeout=None)
         return response
     except Exception as e:
         logger.error(f"Error uploading file: {e}")
         return None
 
+# TODO: make the return format nicer 
 def generate_notes():
     NOTES_PROMPT = """
         You are a helpful AI tutor. Your task is to generate clear, comprehensive, and well-structured study notes from the uploaded document to ace the course. 
@@ -123,6 +125,8 @@ def generate_mcq():
 
     return mcq_resp.message.content
 
+# seems like deleting is necessary as it stores the prev files as well 
+# TODO: delte pdf-assistant and pdf-assitant2
 def delete_assistant():
     # this deletes the assistant
     pc.assistant.delete_assistant(
