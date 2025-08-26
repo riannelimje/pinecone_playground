@@ -14,14 +14,11 @@ PINECONE_API = os.getenv("PINECONE_API")
 pc = Pinecone(api_key=PINECONE_API)
 
 def create_pinecone_assistant():
-    try: 
-        assistant = pc.assistant.describe_assistant(assistant_name="pdf-assistant2")
-    except:
-        assistant = pc.assistant.create_assistant(
-            assistant_name="pdf-assistant2", 
-            instructions="Use British English for spelling and grammar. You are a helpful AI tutor that creates study material from documents. Generate clear, comprehensive and concise summaries and mcq questions with detailed answers.", # Description or directive for the assistant to apply to all responses.
-            region="us", # Region to deploy assistant. Options: "us" (default) or "eu".
-            timeout=30 # Maximum seconds to wait for assistant status to become "Ready" before timing out.
+    assistant = pc.assistant.create_assistant(
+        assistant_name="pdf-assistant", 
+        instructions="Use British English for spelling and grammar. You are a helpful AI tutor that creates study material from documents. Generate clear, comprehensive and concise summaries and mcq questions with detailed answers.", # Description or directive for the assistant to apply to all responses.
+        region="us", # Region to deploy assistant. Options: "us" (default) or "eu".
+        timeout=30 # Maximum seconds to wait for assistant status to become "Ready" before timing out.
     )
 
     return assistant
@@ -29,11 +26,11 @@ def create_pinecone_assistant():
 assistant = create_pinecone_assistant()
 
 # TODO: create my own pdf parser kinda thing and embedding??? + accept uploads from the web those kind or tbh i can just upload here
-def upload_pdf():
+def upload_pdf(file_path):
     # it seems like the quota for upload is 10 
     try:
         response = assistant.upload_file(
-            file_path="/Users/riannelim/Downloads/Telegram Desktop/SMU_Gen_AI_Topic_1___part_1_250822_093259.pdf",
+            file_path=file_path,    
             timeout=None)
         return response
     except Exception as e:
@@ -81,8 +78,11 @@ def generate_notes():
     """
     notes_msg = Message(role="user", content=NOTES_PROMPT)
     notes_resp = assistant.chat(messages=[notes_msg])
+    notes = notes_resp.message.content
 
-    return notes_resp.message.content
+    delete_assistant()
+
+    return notes
 
 def generate_mcq():
     MCQ_PROMPT = """
@@ -122,16 +122,20 @@ def generate_mcq():
     """
     mcq_msg = Message(role="user", content=MCQ_PROMPT)
     mcq_resp = assistant.chat(messages=[mcq_msg])
+    mcq = mcq_resp.message.content
 
-    return mcq_resp.message.content
+    # deleting after generating each time seems like a workaround on that 10 quota 
+    delete_assistant()
+
+    return mcq
 
 # seems like deleting is necessary as it stores the prev files as well 
-# TODO: delte pdf-assistant and pdf-assitant2
 def delete_assistant():
     # this deletes the assistant
     pc.assistant.delete_assistant(
         assistant_name="pdf-assistant", 
     )
+    logger.info("Assistant deleted successfully.")
 
 def test_workflow():
     upload_res = upload_pdf()
@@ -144,7 +148,6 @@ def test_workflow():
 
     if notes:
         logger.info(f"Notes generated successfully: {notes}")
-        return notes
     else:
         logger.error("Notes generation failed.")
 
@@ -152,11 +155,10 @@ def test_workflow():
 
     if mcq:
         logger.info(f"MCQ generated successfully: {mcq}")
-        return mcq
     else:
         logger.error("MCQ generation failed.")
 
     return None
 
 if __name__ == "__main__":
-    test_workflow()
+    delete_assistant()

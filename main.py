@@ -21,10 +21,11 @@ def read_root():
     return {"status": "running", 
             "pdf_uploaded": pdf_uploaded}
 
+# TODO: implement file upload and retrieval 
 @app.post("/upload_pdf")
 def upload_pdf_endpoint():
     global pdf_uploaded
-    response = upload_pdf()
+    response = upload_pdf(file_path="i need a file path")
     if response:
         pdf_uploaded = True
         return {"message": "PDF uploaded successfully."}
