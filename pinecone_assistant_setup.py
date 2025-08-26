@@ -29,6 +29,7 @@ def create_pinecone_assistant():
 assistant = create_pinecone_assistant()
 
 def upload_pdf():
+    # it seems like the quota for upload is 10 
     try:
         response = assistant.upload_file(
             file_path="/Users/riannelim/Desktop/mcra/week1/M19-2025-MCRA-W01-Attract-Awareness-Student-Deck.pdf",

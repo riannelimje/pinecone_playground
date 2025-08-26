@@ -1,6 +1,7 @@
-from fastapi import FastAPI
 import uvicorn
+from fastapi import FastAPI
 from pinecone_assistant_setup import generate_notes, upload_pdf, generate_mcq, assistant 
+from parser import format_response
 
 app = FastAPI()
 
@@ -34,7 +35,7 @@ def generate_mcq_endpoint():
     global pdf_uploaded
     if not pdf_uploaded:
         return {"message": "PDF not uploaded yet."}
-    mcq = generate_mcq()
+    mcq = format_response(generate_mcq())
     return {"mcq": mcq}
 
 if __name__ == "__main__":
