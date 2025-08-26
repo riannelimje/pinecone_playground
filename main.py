@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 import uvicorn
-from pinecone_assistant_setup import generate_notes, upload_pdf, assistant 
+from pinecone_assistant_setup import generate_notes, upload_pdf, generate_mcq, assistant 
 
 app = FastAPI()
 
@@ -28,6 +28,14 @@ def generate_notes_endpoint():
         return {"message": "PDF not uploaded yet."}
     notes = generate_notes()
     return {"notes": notes}
+
+@app.get("/generate_mcq")
+def generate_mcq_endpoint():
+    global pdf_uploaded
+    if not pdf_uploaded:
+        return {"message": "PDF not uploaded yet."}
+    mcq = generate_mcq()
+    return {"mcq": mcq}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
