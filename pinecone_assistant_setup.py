@@ -14,16 +14,24 @@ PINECONE_API = os.getenv("PINECONE_API")
 pc = Pinecone(api_key=PINECONE_API)
 
 def create_pinecone_assistant():
-    assistant = pc.assistant.create_assistant(
-        assistant_name="pdf-assistant", 
-        instructions="Use British English for spelling and grammar. You are a helpful AI tutor that creates study material from documents. Generate clear, comprehensive and concise summaries and mcq questions with detailed answers.", # Description or directive for the assistant to apply to all responses.
-        region="us", # Region to deploy assistant. Options: "us" (default) or "eu".
-        timeout=30 # Maximum seconds to wait for assistant status to become "Ready" before timing out.
-    )
+    try:
+        assistant = pc.assistant.describe_assistant(assistant_name="pdf-assistant")
+        logger.info("Pinecone assistant already exists.")
+    except:
+        assistant = pc.assistant.create_assistant(
+            assistant_name="pdf-assistant", 
+            instructions="Use British English for spelling and grammar. You are a helpful AI tutor that creates study material from documents. Generate clear, comprehensive and concise summaries and mcq questions with detailed answers.", # Description or directive for the assistant to apply to all responses.
+            region="us", # Region to deploy assistant. Options: "us" (default) or "eu".
+            timeout=30 # Maximum seconds to wait for assistant status to become "Ready" before timing out.
+        )
 
     return assistant
 
 assistant = create_pinecone_assistant()
+
+def assistant_list():
+    return pc.assistant.list_assistants()
+
 
 # TODO: create my own pdf parser kinda thing and embedding??? + accept uploads from the web those kind or tbh i can just upload here
 def upload_pdf(file_path):

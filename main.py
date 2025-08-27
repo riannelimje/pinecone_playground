@@ -2,7 +2,7 @@ import uvicorn
 import shutil
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pinecone_assistant_setup import generate_notes, upload_pdf, generate_mcq, create_pinecone_assistant, delete_assistant, assistant 
+from pinecone_assistant_setup import generate_notes, upload_pdf, generate_mcq, create_pinecone_assistant, delete_assistant, assistant_list
 from parser import format_response
 from pathlib import Path
 
@@ -68,7 +68,7 @@ async def upload_pdf_endpoint(file: UploadFile = File(...)):
         file.file.close()
 
 @app.get("/generate_notes")
-def generate_notes_endpoint():
+def generate_notes_endpoint() -> dict:
     global pdf_uploaded
     if not pdf_uploaded:
         return {"message": "PDF not uploaded yet."}
@@ -76,7 +76,7 @@ def generate_notes_endpoint():
     return {"notes": notes}
 
 @app.get("/generate_mcq")
-def generate_mcq_endpoint():
+def generate_mcq_endpoint() -> dict:
     global pdf_uploaded
     if not pdf_uploaded:
         return {"message": "PDF not uploaded yet."}
@@ -92,6 +92,12 @@ def create_pinecone_assistant_endpoint():
 def delete_pinecone_assistant_endpoint():
     delete_assistant()
     return {"message": "Pinecone assistant deleted successfully."}
+
+@app.get("/assistant_list", tags=["helper"])
+def assistant_list_endpoint():
+    assistants = assistant_list()
+     # If assistants is a complex object, convert it to a list of dicts:
+    return {"assistants": [a.to_dict() for a in assistants]}  # or manually extract fields
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
