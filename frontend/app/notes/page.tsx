@@ -3,14 +3,15 @@
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, Download, Copy } from "lucide-react"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { ArrowLeft, Download, Copy, Check } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useToast } from "@/hooks/use-toast"
+import ReactMarkdown from "react-markdown"
 
 export default function NotesPage() {
   const [notes, setNotes] = useState<string>("")
+  const [showCopyModal, setShowCopyModal] = useState(false)
   const router = useRouter()
-  const { toast } = useToast()
 
   useEffect(() => {
     const savedNotes = localStorage.getItem("convertedNotes")
@@ -24,16 +25,11 @@ export default function NotesPage() {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(notes)
-      toast({
-        title: "Copied!",
-        description: "Notes copied to clipboard",
-      })
+      setShowCopyModal(true)
+      // Auto-close modal after 2 seconds
+      setTimeout(() => setShowCopyModal(false), 2000)
     } catch (err) {
-      toast({
-        title: "Error",
-        description: "Failed to copy notes",
-        variant: "destructive",
-      })
+      console.error("Failed to copy notes:", err)
     }
   }
 
@@ -77,13 +73,55 @@ export default function NotesPage() {
               <CardTitle className="text-2xl">Converted Notes</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="prose prose-gray dark:prose-invert max-w-none">
-                <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed">{notes}</div>
+              <div className="prose prose-gray dark:prose-invert max-w-none prose-headings:text-gray-900 dark:prose-headings:text-gray-100">
+                <ReactMarkdown
+                  components={{
+                    h1: ({ children }) => (
+                      <h1 className="text-3xl font-bold mb-4 text-gray-900 dark:text-gray-100">{children}</h1>
+                    ),
+                    h2: ({ children }) => (
+                      <h2 className="text-2xl font-semibold mb-3 text-gray-900 dark:text-gray-100">{children}</h2>
+                    ),
+                    h3: ({ children }) => (
+                      <h3 className="text-xl font-medium mb-2 text-gray-900 dark:text-gray-100">{children}</h3>
+                    ),
+                    p: ({ children }) => <p className="mb-4 leading-relaxed">{children}</p>,
+                    ul: ({ children }) => <ul className="list-disc pl-6 mb-4 space-y-1">{children}</ul>,
+                    ol: ({ children }) => <ol className="list-decimal pl-6 mb-4 space-y-1">{children}</ol>,
+                    li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                    blockquote: ({ children }) => (
+                      <blockquote className="border-l-4 border-blue-500 pl-4 italic my-4 text-gray-600 dark:text-gray-400">
+                        {children}
+                      </blockquote>
+                    ),
+                    code: ({ children }) => (
+                      <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm font-mono">
+                        {children}
+                      </code>
+                    ),
+                    pre: ({ children }) => (
+                      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto mb-4">{children}</pre>
+                    ),
+                  }}
+                >
+                  {notes}
+                </ReactMarkdown>
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
+      <Dialog open={showCopyModal} onOpenChange={setShowCopyModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Check className="h-5 w-5 text-green-500" />
+              Text Copied!
+            </DialogTitle>
+            <DialogDescription>Your notes have been successfully copied to the clipboard.</DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
