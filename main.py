@@ -3,7 +3,7 @@ import shutil
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pinecone_assistant_setup import generate_notes, upload_pdf, generate_mcq, create_pinecone_assistant, delete_assistant, assistant_list
-from parser import format_response
+from utils.parser_json import format_response
 from pathlib import Path
 
 app = FastAPI()

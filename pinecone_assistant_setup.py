@@ -36,6 +36,7 @@ def assistant_list():
 # TODO: create my own pdf parser kinda thing and embedding??? + accept uploads from the web those kind or tbh i can just upload here
 def upload_pdf(file_path):
     # it seems like the quota for upload is 10 
+    assistant = create_pinecone_assistant()
     try:
         response = assistant.upload_file(
             file_path=file_path,    
