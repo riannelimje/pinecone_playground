@@ -15,15 +15,15 @@ pc = Pinecone(api_key=PINECONE_API)
 
 def create_pinecone_assistant():
     try:
-        assistant = pc.assistant.describe_assistant(assistant_name="pdf-assistant")
-        logger.info("Pinecone assistant already exists.")
-    except:
         assistant = pc.assistant.create_assistant(
             assistant_name="pdf-assistant", 
             instructions="Use British English for spelling and grammar. You are a helpful AI tutor that creates study material from documents. Generate clear, comprehensive and concise summaries and mcq questions with detailed answers.", # Description or directive for the assistant to apply to all responses.
             region="us", # Region to deploy assistant. Options: "us" (default) or "eu".
             timeout=30 # Maximum seconds to wait for assistant status to become "Ready" before timing out.
         )
+    except:
+        assistant = pc.assistant.describe_assistant(assistant_name="pdf-assistant")
+        logger.critical("Pinecone assistant already exists.")
 
     return assistant
 
@@ -37,10 +37,13 @@ def assistant_list():
 def upload_pdf(file_path):
     # it seems like the quota for upload is 10 
     assistant = create_pinecone_assistant()
+    logger.info("after the assistant stage")
     try:
+        logger.info("Uploading file to Pinecone assistant...")
         response = assistant.upload_file(
             file_path=file_path,    
             timeout=None)
+        logger.info("File uploaded successfully.")
         return response
     except Exception as e:
         logger.error(f"Error uploading file: {e}")
@@ -85,9 +88,11 @@ def generate_notes():
 
         Ensure that every page of the document is being covered and make the notes clear and comprehensive with a concise summary at the end.
     """
+    logger.info("Generating notes from the document...")
     notes_msg = Message(role="user", content=NOTES_PROMPT)
     notes_resp = assistant.chat(messages=[notes_msg])
     notes = notes_resp.message.content
+    logger.info("Notes generated successfully.")
 
     delete_assistant()
 

@@ -35,7 +35,7 @@ export default function HomePage() {
         method: "POST",
         body: formData,
       })
-
+      console.log("Upload response:", uploadRes)
       if (!uploadRes.ok) {
         setIsProcessing(false)
         setProcessingType(null)
