@@ -57,7 +57,6 @@ def upload_pdf(file_path):
         logger.error(f"Error uploading file: {e}")
         return None
 
-# TODO: make the return format nicer 
 def generate_notes():
     NOTES_PROMPT = """
         You are a helpful AI tutor. Your task is to generate clear, comprehensive, and well-structured study notes from the uploaded document to ace the course. 
@@ -104,45 +103,59 @@ def generate_notes():
 
     return notes
 
-def generate_mcq():
-    MCQ_PROMPT = """
+def generate_mcq(difficulty):
+    logger.info(f"Generating MCQs with difficulty level: {difficulty}")
+    EASY = """
+        Ensure that the questions are straightforward and test basic understanding of key concepts.
+    """
+    MEDIUM = """
+        Ensure that the questions are moderately difficult and require application and analysis of the concepts.
+    """
+    HARD = """
+        Ensure that the questions challenge the student's comprehension, critical thinking and problem-solving skills. The entire topic, subtopics, everything should be tested to the fine details, there is no limit as to how many questions there should be as long as everything is being tested. Do incorporate question that requires higher-order thinking skills.
+    """
+    difficulty_instructions = {
+        "easy": EASY,
+        "medium": MEDIUM,
+        "hard": HARD
+    }
+    MCQ_PROMPT = f"""
         You are a helpful AI tutor that creates multiple choice questions from the notes and documents. 
         Create multiple choice questions with 4 options each, and provide the correct answer with a detailed explanation.
         Ensure that the questions cover all the main topics and subtopics from the notes.
         Make the questions clear and concise, and ensure that they test understanding of key concepts and important facts.
 
-        Format the questions in JSON 
-        Here is an example: 
-        {
+        The difficulty of the question should be {difficulty}
+        Requirements for the difficulty level: {difficulty_instructions[difficulty]}
+
+        Stricly format the questions in JSON 
+        Format as below 
+        {{
             "questions": [
-                {
-                    "question": "What is the capital of France?",
-                    "options": [
-                        "Berlin",
-                        "Madrid",
-                        "Paris",
-                        "Rome"
-                    ],
-                    "answer": "Paris",
-                    "explanation": "Paris is the capital and most populous city of France."
-                },
-                {
-                    "question": "What is the largest planet in our solar system?",
-                    "options": [
-                        "Earth",
-                        "Jupiter",
-                        "Mars",
-                        "Saturn"
-                    ],
-                    "answer": "Jupiter",
-                    "explanation": "Jupiter is the largest planet in our solar system."
-                }
+                {{
+                    "question": "your question here",
+                    "options": ["option1", "option2", "option3", "option4"],
+                    "answer": "correct answer",
+                    "explanation": "explanation here"
+                }}
             ]
-        }
+        }}
+        This is what the class looks like
+        class Question(BaseModel):
+            question: str
+            options: List[str]
+            answer: str
+            explanation: str
+        
+        Do not copy the above example questions.
+        Come up with your own questions that is relevant to the uploaded file's content.
     """
+    logger.info("Generating MCQs from the document...")
     mcq_msg = Message(role="user", content=MCQ_PROMPT)
     mcq_resp = assistant.chat(messages=[mcq_msg])
     mcq = mcq_resp.message.content
+    logger.info(mcq)
+    logger.info("MCQs generated successfully.")
 
     return mcq
 

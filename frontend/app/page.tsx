@@ -13,6 +13,7 @@ export default function HomePage() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingType, setProcessingType] = useState<"notes" | "mcq" | null>(null)
   const [hasUploadedFile, setHasUploadedFile] = useState(false)
+  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium")
   const router = useRouter()
 
   useEffect(() => {
@@ -62,14 +63,23 @@ export default function HomePage() {
         }
       }
 
-      const endpoint = type === "notes" ? "generate_notes" : "generate_mcq"
-      const res = await fetch(`http://localhost:8000/${endpoint}`)
-      const data = await res.json()
-
       if (type === "notes") {
+        const res = await fetch("http://localhost:8000/generate_notes")
+        const data = await res.json()
         localStorage.setItem("convertedNotes", data.notes)
         router.push("/notes")
       } else {
+        const res = await fetch("http://localhost:8000/generate_mcq", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            difficulty_level: difficulty,
+          }),
+        })
+        console.log(difficulty)
+        const data = await res.json()
         localStorage.setItem("convertedMCQ", JSON.stringify(data.mcq))
         router.push("/mcq")
       }
@@ -148,7 +158,7 @@ export default function HomePage() {
 
           {(selectedFile || hasUploadedFile) && (
             <div className="grid md:grid-cols-2 gap-6">
-              <Card className={`hover:shadow-lg transition-all ${isProcessing ? "opacity-75" : ""}`}>
+              <Card className={`hover:shadow-lg transition-all flex flex-col ${isProcessing ? "opacity-75" : ""}`}>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <FileText className="h-5 w-5 text-blue-600" />
@@ -156,7 +166,16 @@ export default function HomePage() {
                   </CardTitle>
                   <CardDescription>Extract and organize key information into readable notes</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex-1 flex flex-col">
+                  <div className="mb-4 flex-1">
+                    <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 opacity-0">
+                      Placeholder
+                    </div>
+                    <div className="flex gap-4 h-6">
+                      <div className="opacity-0">Spacer content</div>
+                    </div>
+                  </div>
+
                   <Button
                     onClick={() => handleConvert("notes")}
                     disabled={isProcessing}
@@ -174,7 +193,7 @@ export default function HomePage() {
                 </CardContent>
               </Card>
 
-              <Card className={`hover:shadow-lg transition-all ${isProcessing ? "opacity-75" : ""}`}>
+              <Card className={`hover:shadow-lg transition-all flex flex-col ${isProcessing ? "opacity-75" : ""}`}>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <HelpCircle className="h-5 w-5 text-green-600" />
@@ -182,7 +201,29 @@ export default function HomePage() {
                   </CardTitle>
                   <CardDescription>Create interactive multiple-choice questions for study</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex-1 flex flex-col">
+                  <div className="mb-4 flex-1">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 block">
+                      Difficulty Level
+                    </label>
+                    <div className="flex gap-4">
+                      {(["easy", "medium", "hard"] as const).map((level) => (
+                        <label key={level} className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="difficulty"
+                            value={level}
+                            checked={difficulty === level}
+                            onChange={(e) => setDifficulty(e.target.value as "easy" | "medium" | "hard")}
+                            className="text-green-600 focus:ring-green-500"
+                            disabled={isProcessing}
+                          />
+                          <span className="text-sm text-gray-600 dark:text-gray-400 capitalize">{level}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
                   <Button
                     onClick={() => handleConvert("mcq")}
                     disabled={isProcessing}

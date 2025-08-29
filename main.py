@@ -5,6 +5,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from pinecone_assistant_setup import generate_notes, upload_pdf, generate_mcq, create_pinecone_assistant, delete_assistant, assistant_list
 from utils.parser_json import format_response
 from pathlib import Path
+from pydantic import BaseModel
+
+class MCQRequest(BaseModel):
+    difficulty_level: str
 
 app = FastAPI()
 
@@ -69,19 +73,27 @@ async def upload_pdf_endpoint(file: UploadFile = File(...)):
 
 @app.get("/generate_notes")
 def generate_notes_endpoint() -> dict:
-    global pdf_uploaded
-    if not pdf_uploaded:
-        return {"message": "PDF not uploaded yet."}
     notes = generate_notes()
     return {"notes": notes}
 
-@app.get("/generate_mcq")
-def generate_mcq_endpoint() -> dict:
-    global pdf_uploaded
-    if not pdf_uploaded:
-        return {"message": "PDF not uploaded yet."}
-    mcq = format_response(generate_mcq())
-    return {"mcq": mcq}
+@app.post("/generate_mcq")
+def generate_mcq_endpoint(request: MCQRequest) -> dict:
+    try:
+        # Check what generate_mcq actually returns
+        raw_mcq = generate_mcq(request.difficulty_level)
+        print(f"Raw MCQ response: {repr(raw_mcq)}")
+        
+        if not raw_mcq:
+            raise HTTPException(status_code=500, detail="generate_mcq returned empty response")
+        
+        mcq = format_response(raw_mcq)
+        print(mcq)
+        return {"mcq": mcq}
+        
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=f"Response formatting error: {(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"MCQ generation failed: {str(e)}")
 
 @app.get("/create_pinecone_assistant", tags=["helper"])
 def create_pinecone_assistant_endpoint():

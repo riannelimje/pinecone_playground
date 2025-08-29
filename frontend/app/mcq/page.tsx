@@ -30,10 +30,21 @@ export default function MCQPage() {
 
   useEffect(() => {
     const savedMCQ = localStorage.getItem("convertedMCQ")
-    if (savedMCQ) {
-      const data = JSON.parse(savedMCQ)
-      setMcqData(data)
-      setUserAnswers(new Array(data.questions.length).fill(""))
+    if (savedMCQ && savedMCQ !== "undefined") {
+      try {
+        const data = JSON.parse(savedMCQ)
+        if (data && data.questions && Array.isArray(data.questions)) {
+          setMcqData(data)
+          setUserAnswers(new Array(data.questions.length).fill(""))
+        } else {
+          console.error("Invalid MCQ data structure")
+          router.push("/")
+        }
+      } catch (error) {
+        console.error("Failed to parse MCQ data:", error)
+        localStorage.removeItem("convertedMCQ") // Clear invalid data
+        router.push("/")
+      }
     } else {
       router.push("/")
     }
