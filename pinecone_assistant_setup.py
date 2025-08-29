@@ -24,11 +24,17 @@ def create_pinecone_assistant():
     except:
         assistant = pc.assistant.describe_assistant(assistant_name="pdf-assistant")
         logger.critical("Pinecone assistant already exists.")
-        delete_assistant()
-
     return assistant
 
 assistant = create_pinecone_assistant()
+
+# seems like deleting is necessary as it stores the prev files as well 
+def delete_assistant():
+    # this deletes the assistant
+    pc.assistant.delete_assistant(
+        assistant_name="pdf-assistant", 
+    )
+    logger.info("Assistant deleted successfully.")
 
 def assistant_list():
     return pc.assistant.list_assistants()
@@ -140,13 +146,6 @@ def generate_mcq():
 
     return mcq
 
-# seems like deleting is necessary as it stores the prev files as well 
-def delete_assistant():
-    # this deletes the assistant
-    pc.assistant.delete_assistant(
-        assistant_name="pdf-assistant", 
-    )
-    logger.info("Assistant deleted successfully.")
 
 def test_workflow():
     upload_res = upload_pdf()

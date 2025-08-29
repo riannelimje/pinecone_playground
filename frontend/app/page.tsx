@@ -2,45 +2,64 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Upload, FileText, HelpCircle, Loader2, Mic } from "lucide-react"
+import { Upload, FileText, HelpCircle, Loader2, Mic, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 export default function HomePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingType, setProcessingType] = useState<"notes" | "mcq" | null>(null)
+  const [hasUploadedFile, setHasUploadedFile] = useState(false)
   const router = useRouter()
+
+  useEffect(() => {
+    const savedFileName = localStorage.getItem("uploadedFileName")
+    if (savedFileName) {
+      setHasUploadedFile(true)
+    }
+  }, [])
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file && file.type === "application/pdf") {
       setSelectedFile(file)
+      localStorage.setItem("uploadedFileName", file.name)
+      setHasUploadedFile(true)
     }
   }
 
+  const clearFile = () => {
+    setSelectedFile(null)
+    setHasUploadedFile(false)
+    localStorage.removeItem("uploadedFileName")
+    const fileInput = document.getElementById("pdf-upload") as HTMLInputElement
+    if (fileInput) fileInput.value = ""
+  }
+
   const handleConvert = async (type: "notes" | "mcq") => {
-    if (!selectedFile) return
+    if (!selectedFile && !hasUploadedFile) return
     setIsProcessing(true)
     setProcessingType(type)
 
     try {
-      const formData = new FormData()
-      formData.append("file", selectedFile)
+      if (selectedFile) {
+        const formData = new FormData()
+        formData.append("file", selectedFile)
 
-      // Adjust the endpoint as needed (e.g., http://localhost:8000/upload_pdf)
-      const uploadRes = await fetch("http://localhost:8000/upload_pdf", {
-        method: "POST",
-        body: formData,
-      })
-      console.log("Upload response:", uploadRes)
-      if (!uploadRes.ok) {
-        setIsProcessing(false)
-        setProcessingType(null)
-        alert("Upload failed")
-        return
+        const uploadRes = await fetch("http://localhost:8000/upload_pdf", {
+          method: "POST",
+          body: formData,
+        })
+
+        if (!uploadRes.ok) {
+          setIsProcessing(false)
+          setProcessingType(null)
+          alert("Upload failed")
+          return
+        }
       }
 
       const endpoint = type === "notes" ? "generate_notes" : "generate_mcq"
@@ -63,6 +82,11 @@ export default function HomePage() {
     setProcessingType(null)
   }
 
+  const getFileName = () => {
+    if (selectedFile) return selectedFile.name
+    return localStorage.getItem("uploadedFileName") || "Previously uploaded file"
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <div className="container mx-auto px-4 py-12">
@@ -71,12 +95,12 @@ export default function HomePage() {
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             Transform your PDF documents into organized notes or interactive multiple-choice questions
           </p>
-            <div className="mt-6 flex justify-center">
+          <div className="mt-6 flex justify-center">
             <Button variant="outline" onClick={() => router.push("/transcribe")} className="flex items-center gap-2">
               <Mic className="h-4 w-4" />
               Try Speech to Text
             </Button>
-            </div>
+          </div>
         </div>
 
         <div className="max-w-2xl mx-auto">
@@ -103,33 +127,26 @@ export default function HomePage() {
                 <label htmlFor="pdf-upload" className={`cursor-pointer ${isProcessing ? "cursor-not-allowed" : ""}`}>
                   <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {selectedFile ? selectedFile.name : "Click to upload PDF"}
+                    {selectedFile || hasUploadedFile ? getFileName() : "Click to upload PDF"}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">PDF files only, up to 10MB</p>
                 </label>
+                {(selectedFile || hasUploadedFile) && !isProcessing && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={clearFile}
+                    className="mt-4 flex items-center gap-2 mx-auto bg-transparent"
+                  >
+                    <X className="h-4 w-4" />
+                    Upload Different File
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
 
-          {isProcessing && (
-            <Card className="mb-8 border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-center gap-3">
-                  <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
-                  <div className="text-center">
-                    <p className="text-lg font-medium text-blue-900 dark:text-blue-100">
-                      {processingType === "notes" ? "Converting PDF to Notes..." : "Generating MCQ Questions..."}
-                    </p>
-                    <p className="text-sm text-blue-700 dark:text-blue-300">
-                      This may take a few moments. Please don't close this page.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {selectedFile && (
+          {(selectedFile || hasUploadedFile) && (
             <div className="grid md:grid-cols-2 gap-6">
               <Card className={`hover:shadow-lg transition-all ${isProcessing ? "opacity-75" : ""}`}>
                 <CardHeader>
