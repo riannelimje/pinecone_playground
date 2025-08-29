@@ -24,6 +24,7 @@ def create_pinecone_assistant():
     except:
         assistant = pc.assistant.describe_assistant(assistant_name="pdf-assistant")
         logger.critical("Pinecone assistant already exists.")
+        delete_assistant()
 
     return assistant
 
@@ -36,6 +37,7 @@ def assistant_list():
 # TODO: create my own pdf parser kinda thing and embedding??? + accept uploads from the web those kind or tbh i can just upload here
 def upload_pdf(file_path):
     # it seems like the quota for upload is 10 
+    delete_assistant() # what im thinking of is it will delete curr and recreate a new assistant each time they upload new pdf 
     assistant = create_pinecone_assistant()
     logger.info("after the assistant stage")
     try:
@@ -94,8 +96,6 @@ def generate_notes():
     notes = notes_resp.message.content
     logger.info("Notes generated successfully.")
 
-    delete_assistant()
-
     return notes
 
 def generate_mcq():
@@ -138,9 +138,6 @@ def generate_mcq():
     mcq_resp = assistant.chat(messages=[mcq_msg])
     mcq = mcq_resp.message.content
 
-    # deleting after generating each time seems like a workaround on that 10 quota 
-    delete_assistant()
-
     return mcq
 
 # seems like deleting is necessary as it stores the prev files as well 
@@ -173,6 +170,3 @@ def test_workflow():
         logger.error("MCQ generation failed.")
 
     return None
-
-if __name__ == "__main__":
-    delete_assistant()
