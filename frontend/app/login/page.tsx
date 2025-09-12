@@ -45,7 +45,7 @@ export default function LoginPage() {
             <FileText className="h-12 w-12 text-blue-600" />
           </div>
           <CardTitle className="text-2xl">Welcome Back</CardTitle>
-          <CardDescription>Sign in to your PDF converter account</CardDescription>
+          <CardDescription>Sign in to your A+ Alchemy account</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

@@ -107,7 +107,7 @@ export default function HomePage() {
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">PDF to Notes & MCQ Converter</h1>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Transform your PDF documents into organized notes or interactive multiple-choice questions
+            Transform your PDF documents into organised notes or interactive multiple-choice questions
           </p>
           <div className="mt-6 flex justify-center">
             <Button variant="outline" onClick={() => router.push("/transcribe")} className="flex items-center gap-2">

@@ -4,7 +4,7 @@ import { GeistMono } from 'geist/font/mono'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'A+',
+  title: ' A+ Alchemy',
   description: 'generate notes and mcq from pdf',
 }
 
