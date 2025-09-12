@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, Mic, MicOff, Copy, Download, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { AuthGuard } from "@/components/auth-guard"
+import { Navbar } from "@/components/navbar"
 
 interface SpeechRecognitionEvent {
   resultIndex: number
@@ -150,6 +152,8 @@ export default function TranscribePage() {
   }
 
   return (
+    <AuthGuard>
+      <Navbar />
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
@@ -235,5 +239,6 @@ export default function TranscribePage() {
         </DialogContent>
       </Dialog>
     </div>
+    </AuthGuard>
   )
 }
