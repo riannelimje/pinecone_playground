@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Upload, FileText, HelpCircle, Loader2, Mic, X } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { AuthGuard } from "@/components/auth-guard"
+import { Navbar } from "@/components/navbar"
 
 export default function HomePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -98,6 +100,8 @@ export default function HomePage() {
   }
 
   return (
+    <AuthGuard>
+      <Navbar />
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <div className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
@@ -245,5 +249,6 @@ export default function HomePage() {
         </div>
       </div>
     </div>
+    </AuthGuard>
   )
 }

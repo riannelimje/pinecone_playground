@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, ArrowRight, CheckCircle, XCircle, RotateCcw } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { AuthGuard } from "@/components/auth-guard"
+import { Navbar } from "@/components/navbar"
 
 interface Question {
   question: string
