@@ -3,3 +3,4 @@ pinecone==7.3.0
 python-jose[cryptography]
 passlib[bcrypt]
 python-multipart
+uvicorn[standard]
