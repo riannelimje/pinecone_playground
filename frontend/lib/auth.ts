@@ -20,7 +20,7 @@ interface User {
   name: string
 }
 
-const API_BASE_URL = "http://localhost:8000"
+const API_BASE_URL = "https://pinecone-playground.onrender.com"
 
 export class AuthService {
   private static TOKEN_KEY = "auth_token"

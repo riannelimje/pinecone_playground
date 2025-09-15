@@ -52,7 +52,7 @@ export default function HomePage() {
         const formData = new FormData()
         formData.append("file", selectedFile)
 
-        const uploadRes = await fetch("http://localhost:8000/upload_pdf", {
+        const uploadRes = await fetch("https://pinecone-playground.onrender.com/upload_pdf", {
           method: "POST",
           body: formData,
         })
@@ -66,12 +66,12 @@ export default function HomePage() {
       }
 
       if (type === "notes") {
-        const res = await fetch("http://localhost:8000/generate_notes")
+        const res = await fetch("https://pinecone-playground.onrender.com/generate_notes")
         const data = await res.json()
         localStorage.setItem("convertedNotes", data.notes)
         router.push("/notes")
       } else {
-        const res = await fetch("http://localhost:8000/generate_mcq", {
+        const res = await fetch("https://pinecone-playground.onrender.com/generate_mcq", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
